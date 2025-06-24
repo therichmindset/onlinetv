@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Free Live Streaming</title>
+  <style>
+    body { background: #000; color: #fff; font-family: Arial, sans-serif; margin: 0; text-align: center; }
+    .container { max-width: 800px; margin: 20px auto; position: relative; }
+    .player-wrapper { position: relative; padding-top: 56.25%; }
+    #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .viewer-count { text-align: left; margin: 10px 0; font-weight: bold; }
+    .comments { text-align: left; background: #111; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto; }
+    .comment { display: flex; margin-bottom: 10px; }
+    .comment img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
+    .lock-overlay {
+      display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.95); color: #fff; text-align: center; padding-top: 30%; z-index: 99;
+    }
+    .lock-overlay a {
+      background: #00f; color: #fff; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔥 Watch Live Now 🔥</h1>
+
+  <div class="container">
+    <div class="player-wrapper">
+      <!-- YouTube Player -->
+      <div id="player"></div>
+
+      <!-- Lock Overlay -->
+      <div class="lock-overlay" id="lockOverlay">
+        <h2>⏳ Free time expired!</h2>
+        <p>To continue watching, please create your free account now:</p>
+        <a href="YOUR_SIGNUP_LINK" target="_blank">Create Free Account</a>
+      </div>
+    </div>
+
+    <div class="viewer-count">👀 <span id="viewers">0</span> people watching now</div>
+
+    <div class="comments" id="comments"></div>
+
+  </div>
+
+  <!-- YouTube Iframe API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    let player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        videoId: 'WFOBONFhAc0', // 👉 এখানেই আপনার লাইভ ভিডিও ID দিন
+        playerVars: { autoplay: 1, controls: 1 }
+      });
+      lockCheck();
+    }
+
+    // Fullscreen Exit
+    function exitFullScreen() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (document.webkitFullscreenElement) {
+        document.webkitExitFullscreen();
+      } else if (document.mozFullScreenElement) {
+        document.mozCancelFullScreen();
+      } else if (document.msFullscreenElement) {
+        document.msExitFullscreen();
+      }
+    }
+
+    // Lock Check with LocalStorage
+    function lockCheck() {
+      const overlay = document.getElementById('lockOverlay');
+      const lockMinutes = 2;
+      let startTime = localStorage.getItem('liveStartTime');
+      if (!startTime) {
+        startTime = Date.now();
+        localStorage.setItem('liveStartTime', startTime);
+      } else {
+        startTime = parseInt(startTime);
+      }
+
+      const now = Date.now();
+      const elapsed = now - startTime;
+      if (elapsed >= lockMinutes * 60 * 1000) {
+        pauseAndLock();
+      } else {
+        const remaining = lockMinutes * 60 * 1000 - elapsed;
+        setTimeout(pauseAndLock, remaining);
+      }
+
+      function pauseAndLock() {
+        if (player && player.pauseVideo) {
+          player.pauseVideo();
+        }
+        exitFullScreen();
+        overlay.style.display = 'block';
+      }
+    }
+
+    // Fake Viewers
+    let viewers = Math.floor(Math.random() * 200) + 3500;
+    document.getElementById('viewers').innerText = viewers;
+    setInterval(() => {
+      viewers += Math.floor(Math.random() * 20) - 10;
+      if (viewers < 3000) viewers = 3000;
+      if (viewers > 5000) viewers = 5000;
+      document.getElementById('viewers').innerText = viewers;
+    }, 4000);
+
+    // Fake Comments
+    const comments = [
+      "Nice stream 👍", "Where are you from?", "I am from NY",
+      "Account create is so easy", "Create account in 2 minutes",
+      "Love this live ❤️", "Enjoying this so much", "Quality is amazing",
+      "Keep it up!", "How many people watching?", "Awesome video!",
+      "Watching with friends", "Audio is clear", "Nice hosting",
+      "Who else here?", "Chat is crazy lol", "What a stream!",
+      "This is cool", "Streaming smooth", "Great job admin",
+      "Who else loves this?", "How to create account?", "Creating my free account now",
+      "Free account works perfectly", "So simple to watch free", "Good job guys",
+      "Hello everyone", "Who else enjoying?", "Best live ever", "Thanks for sharing"
+    ];
+    const names = ["Alex", "Mia", "David", "Emma", "Chris", "Sophia", "Daniel", "Olivia", "James", "Isabella", "Liam", "Noah", "Ethan", "Ava"];
+    const commentsBox = document.getElementById('comments');
+    const randomImage = () => `https://i.pravatar.cc/40?img=${Math.floor(Math.random() * 70) + 1}`;
+
+    function addComment() {
+      const name = names[Math.floor(Math.random() * names.length)];
+      const img = randomImage();
+      const text = comments[Math.floor(Math.random() * comments.length)];
+      const commentHTML = `
+        <div class="comment">
+          <img src="${img}" alt="${name}">
+          <div><strong>${name}</strong><br>${text}</div>
+        </div>`;
+      commentsBox.innerHTML += commentHTML;
+      commentsBox.scrollTop = commentsBox.scrollHeight;
+    }
+
+    let added = 0;
+    const maxComments = 300;
+    addComment();
+    const commentInterval = setInterval(() => {
+      addComment();
+      added++;
+      if (added >= maxComments) clearInterval(commentInterval);
+    }, 1200);
+  </script>
+
+</body>
+</html>
